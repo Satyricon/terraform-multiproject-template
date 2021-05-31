@@ -1,0 +1,12 @@
+trigger:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - realm_X/project_Y
+
+stages:
+  - template: ../../pipelines/terraform_apply_realm.yml
+    parameters:
+      project_path: realm_X/project_Y

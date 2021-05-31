@@ -1,0 +1,33 @@
+parameters:
+  - name: sa_resource_group
+    type: string
+    default: 
+  - name: storage_account
+    type: string
+    default: 
+  - name: container
+    type: string
+    default: 
+  - name: tenant_id
+    type: string
+    default: 
+  - name: subscription_id
+    type: string
+    default: 
+  - name: msi_id
+    type: string
+    default: 
+  - name: tf_subnet_id
+    type: string
+    default: 
+  - name: pool_name
+    type: string
+    default: 
+  - name: approval_environment
+    type: string
+  - name: project_path
+    type: string
+
+stages:
+  - template: terraform_apply_template.yml
+    parameters: ${{ parameters }}

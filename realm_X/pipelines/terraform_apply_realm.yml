@@ -1,0 +1,10 @@
+parameters:
+  - name: project_path
+    type: string
+  - name: approval_environment
+    type: string
+    default: Realm X Approval Environment
+
+stages:
+  - template: ../../pipelines/terraform_apply.yml
+    parameters: ${{ parameters }}

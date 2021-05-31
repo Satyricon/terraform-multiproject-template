@@ -1,0 +1,104 @@
+parameters:
+  - name: sa_resource_group
+    type: string
+  - name: storage_account
+    type: string
+  - name: container
+    type: string
+  - name: project_path
+    type: string
+  - name: tenant_id
+    type: string
+  - name: subscription_id
+    type: string
+  - name: msi_id
+    type: string
+  - name: tf_subnet_id
+    type: string
+  - name: pool_name
+    type: string
+  - name: approval_environment
+    type: string
+
+stages:
+  - stage: plan
+    displayName: Plan phase
+    jobs:
+      - job: plan
+        pool: ${{ parameters.pool_name}}
+        variables:
+          - name: ARM.USE.MSI
+            value: true
+          - name: TF.VAR.MSI.ID
+            value: ${{ parameters.msi_id }}
+          - name: TF.VAR.TF.SUBNET.ID
+            value: ${{ parameters.tf_subnet_id }}
+          - name: TF.VAR.TF.RG.NAME
+            value: ${{ parameters.sa_resource_group }}
+          - name: TF.VAR.TF.SA.NAME
+            value: ${{ parameters.storage_account }}
+          - name: TF.VAR.TF.CONTAINER.NAME
+            value: ${{ parameters.container }}
+          - name: TF.VAR.SUBSCRIPTION.ID
+            value: ${{ parameters.subscription_id }}
+          - name: TF.VAR.TENANT.ID
+            value: ${{ parameters.tenant_id }}
+        steps:
+          - script: terraform version
+            displayName: Terraform Version
+          - script: terraform init -backend-config=resource_group_name=${{ parameters.sa_resource_group }} -backend-config="storage_account_name=${{ parameters.storage_account }}" -backend-config="container_name=${{ parameters.container }}" -backend-config="key=${{ parameters.project_path }}.terraform.tfstate" -backend-config="subscription_id=${{ parameters.subscription_id }}" -backend-config="tenant_id=${{ parameters.tenant_id }}"
+            displayName: "Terraform Init"
+            workingDirectory: ${{ parameters.project_path }}
+          - script: terraform plan -out="out.plan"
+            displayName: Terraform Plan
+            workingDirectory: ${{ parameters.project_path }}
+          - publish: ${{ parameters.project_path }}/out.plan
+            artifact: plan_output
+            displayName: "Publish plan output as artifact"
+
+  - stage: apply
+    displayName: Apply phase
+    dependsOn: plan
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    jobs:
+      - deployment: apply
+        displayName: Apply changes after waiting for approval
+        pool: ${{ parameters.pool_name}}
+        environment: ${{ parameters.approval_environment }}
+        variables:
+          - name: ARM.USE.MSI
+            value: true
+          - name: TF.VAR.MSI.ID
+            value: ${{ parameters.msi_id }}
+          - name: TF.VAR.TF.SUBNET.ID
+            value: ${{ parameters.tf_subnet_id }}
+          - name: TF.VAR.TF.RG.NAME
+            value: ${{ parameters.sa_resource_group }}
+          - name: TF.VAR.TF.SA.NAME
+            value: ${{ parameters.storage_account }}
+          - name: TF.VAR.TF.CONTAINER.NAME
+            value: ${{ parameters.container }}
+          - name: TF.VAR.SUBSCRIPTION.ID
+            value: ${{ parameters.subscription_id }}
+          - name: TF.VAR.TENANT.ID
+            value: ${{ parameters.tenant_id }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: none
+                - checkout: self
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    source: current
+                    artifact: plan_output
+                    path: ${{ parameters.project_path }}
+                  displayName: "Download plan output"
+                - script: terraform version
+                  displayName: Terraform Version
+                - script: terraform init -backend-config=resource_group_name=${{ parameters.sa_resource_group }} -backend-config="storage_account_name=${{ parameters.storage_account }}" -backend-config="container_name=${{ parameters.container }}" -backend-config="key=${{ parameters.project_path }}.terraform.tfstate" -backend-config="subscription_id=${{ parameters.subscription_id }}" -backend-config="tenant_id=${{ parameters.tenant_id }}"
+                  displayName: "Terraform Init"
+                  workingDirectory: ${{ parameters.project_path }}
+                - script: terraform apply out.plan
+                  displayName: "Terraform Apply"
+                  workingDirectory: ${{ parameters.project_path }}
