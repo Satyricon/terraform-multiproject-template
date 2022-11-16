@@ -68,7 +68,7 @@ stages:
   - stage: apply
     displayName: Apply phase
     dependsOn: plan
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(succeeded(), in(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/heads/main'))
     jobs:
       - deployment: apply
         displayName: Apply changes after waiting for approval
