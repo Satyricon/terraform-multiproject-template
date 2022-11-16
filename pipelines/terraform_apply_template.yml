@@ -55,6 +55,9 @@ stages:
           - publish: ${{ parameters.project_path }}/out.plan
             artifact: plan_output
             displayName: "Publish plan output as artifact"
+          - publish: ${{ parameters.project_path }}/.terraform.lock.hcl
+            artifact: terraform_lock_hcl
+            displayName: "Publish .terraform.lock.hcl as artifact"
 
   - stage: apply
     displayName: Apply phase
@@ -94,6 +97,12 @@ stages:
                     artifact: plan_output
                     path: ${{ parameters.project_path }}
                   displayName: "Download plan output"
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    source: current
+                    artifact: terraform_lock_hcl
+                    path: ${{ parameters.project_path }}
+                  displayName: "Download .terraform.lock.hcl"
                 - script: terraform version
                   displayName: Terraform Version
                 - script: terraform init -backend-config=resource_group_name=${{ parameters.sa_resource_group }} -backend-config="storage_account_name=${{ parameters.storage_account }}" -backend-config="container_name=${{ parameters.container }}" -backend-config="key=${{ parameters.project_path }}.terraform.tfstate" -backend-config="subscription_id=${{ parameters.subscription_id }}" -backend-config="tenant_id=${{ parameters.tenant_id }}"
