@@ -43,6 +43,8 @@ stages:
             value: ${{ parameters.subscription_id }}
           - name: TF.VAR.TENANT.ID
             value: ${{ parameters.tenant_id }}
+          - name: TF.VAR.TF.PROJECT.PATH
+            value: ${{ parameters.project_path }}
         steps:
           - script: terraform version
             displayName: Terraform Version
@@ -85,6 +87,8 @@ stages:
             value: ${{ parameters.subscription_id }}
           - name: TF.VAR.TENANT.ID
             value: ${{ parameters.tenant_id }}
+          - name: TF.VAR.TF.PROJECT.PATH
+            value: ${{ parameters.project_path }}
         strategy:
           runOnce:
             deploy:

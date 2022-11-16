@@ -72,3 +72,7 @@ variable "TF_SA_NAME" {
 variable "TF_CONTAINER_NAME" {
   type = string
 }
+
+variable "TF_PROJECT_PATH" {
+  type        = string
+}
