@@ -43,6 +43,10 @@ stages:
             value: ${{ parameters.subscription_id }}
           - name: TF.VAR.TENANT.ID
             value: ${{ parameters.tenant_id }}
+          - name: ARM.SUBSCRIPTION.ID
+            value: ${{ parameters.subscription_id }}
+          - name: ARM.TENANT.ID
+            value: ${{ parameters.tenant_id }}
           - name: TF.VAR.TF.PROJECT.PATH
             value: ${{ parameters.project_path }}
         steps:
@@ -86,6 +90,10 @@ stages:
           - name: TF.VAR.SUBSCRIPTION.ID
             value: ${{ parameters.subscription_id }}
           - name: TF.VAR.TENANT.ID
+            value: ${{ parameters.tenant_id }}
+          - name: ARM.SUBSCRIPTION.ID
+            value: ${{ parameters.subscription_id }}
+          - name: ARM.TENANT.ID
             value: ${{ parameters.tenant_id }}
           - name: TF.VAR.TF.PROJECT.PATH
             value: ${{ parameters.project_path }}
