@@ -2,6 +2,7 @@ trigger:
   branches:
     include:
       - master
+      - main
   paths:
     include:
       - realm_X/project_Y
